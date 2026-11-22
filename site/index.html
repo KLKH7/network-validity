@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The friend effect: what one-at-a-time simulation misses</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface: #fcfcfb; --surface-2: #f4f3f0; --line: #e4e2dc;
+    --text: #0b0b0b; --text-2: #52514e; --text-3: #8a8983;
+    --real: #0b0b0b; --ref: #b9b7b0; --band: #e9e7e1;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface: #1a1a19; --surface-2: #232321; --line: #383835;
+      --text: #f0efec; --text-2: #c3c2b7; --text-3: #8f8e86;
+      --real: #f0efec; --ref: #6b6a64; --band: #2f2f2c;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface); color: var(--text);
+    font: 17px/1.6 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 820px; margin: 0 auto; padding: 72px 24px 96px; }
+  .eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin: 0 0 20px; }
+  h1 { font: 600 44px/1.1 ui-serif, Georgia, "Times New Roman", serif; letter-spacing: -.01em; margin: 0 0 20px; text-wrap: balance; }
+  h2 { font: 600 26px/1.2 ui-serif, Georgia, serif; margin: 72px 0 12px; text-wrap: balance; }
+  p { margin: 0 0 16px; color: var(--text-2); max-width: 68ch; }
+  p.lede { font-size: 20px; color: var(--text); }
+  a { color: inherit; text-underline-offset: 3px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 36px 0 8px; }
+  .tile { background: var(--surface-2); border-radius: 14px; padding: 20px; }
+  .tile b { display: block; font: 600 34px/1 ui-serif, Georgia, serif; font-variant-numeric: tabular-nums; color: var(--text); }
+  .tile span { display: block; margin-top: 10px; font-size: 14px; line-height: 1.4; color: var(--text-2); }
+  .card { border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin: 24px 0; position: relative; }
+  .card h3 { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+  .card .sub { font-size: 14px; color: var(--text-2); margin: 0 0 16px; max-width: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--text-2); margin: 0 0 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .legend i.tick { width: 2px; height: 14px; border-radius: 0; vertical-align: -3px; }
+  .legend i.band { width: 18px; height: 10px; border-radius: 3px; }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  svg text { font: 13px ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: var(--text-2); }
+  svg text.q { fill: var(--text); font-size: 14px; }
+  svg .hit { fill: transparent; cursor: default; }
+  .tip { position: absolute; pointer-events: none; background: var(--text); color: var(--surface); font-size: 13px; line-height: 1.4;
+    padding: 8px 10px; border-radius: 8px; max-width: 260px; opacity: 0; transition: opacity .1s; z-index: 2; }
+  .tip b { font-weight: 600; }
+  .seg { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; margin: 0 0 16px; }
+  .seg button { font: inherit; font-size: 13px; border: 0; background: none; color: var(--text-2); padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 9px 8px; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-weight: 500; color: var(--text-3); font-size: 12px; vertical-align: bottom; }
+  details summary { cursor: pointer; font-size: 14px; color: var(--text-2); }
+  ol.method { padding-left: 20px; color: var(--text-2); }
+  ol.method li { margin-bottom: 10px; max-width: 66ch; }
+  footer { margin-top: 72px; font-size: 13px; color: var(--text-3); }
+  @media (max-width: 640px) { h1 { font-size: 32px; } .tiles { grid-template-columns: 1fr !important; } main { padding-top: 40px; } }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">A network test for synthetic respondents</p>
+  <h1>Real friends agree beyond their background. Simulated friends don&rsquo;t.</h1>
+  <p class="lede" id="lede"></p>
+  <div class="tiles" id="tiles"></div>
+
+  <h2>How often do two friends give the same answer?</h2>
+  <p>Each row is one survey question. The black dot is real friends, the grey tick is students paired at random, and the shaded band is what shared gender, race and home region explain. The simulated dots sit far to the right for a dull reason: the model gives nearly everyone the same few answers, so any two simulated students agree often, friends or not. The next chart removes that.</p>
+  <div class="card" id="agreeCard">
+    <h3>Share of friend pairs giving the same answer</h3>
+    <p class="sub" id="agreeSub"></p>
+    <div class="legend" id="agreeLegend"></div>
+    <svg id="agree" role="img" aria-label="Dot plot of friend agreement by question"></svg>
+    <div class="tip" id="tip"></div>
+    <details style="margin-top:16px"><summary>Show as a table</summary><div id="agreeTable" style="margin-top:12px;overflow-x:auto"></div></details>
+  </div>
+
+  <h2>Where does the agreement come from?</h2>
+  <p>Friends tend to share a gender, a race and a home region, so some agreement comes for free. Each bar splits the friend effect into the part that shared background explains and the part beyond it. For real students almost all of it is beyond background. For students simulated one at a time, almost none is.</p>
+  <div class="card" id="splitCard">
+    <h3>Extra agreement between friends, in percentage points above random pairs</h3>
+    <p class="sub">Grey: explained by shared gender, race and region. Colour: beyond that. Hover a bar for the figures.</p>
+    <div class="legend" id="shareLegend"></div>
+    <svg id="share" role="img" aria-label="Stacked bars splitting the friend effect into background and beyond"></svg>
+    <details style="margin-top:16px"><summary>Show as a table</summary><div id="splitTable" style="margin-top:12px;overflow-x:auto"></div></details>
+  </div>
+
+  <h2>Do the simulated students still look like the real ones?</h2>
+  <p>Friend agreement is only meaningful if the answers are realistic in the first place. This shows how the simulated answers are spread across the options, next to the real spread.</p>
+  <div class="card">
+    <h3>Answer mix: real students and each run</h3>
+    <div class="seg" id="qPick" role="group" aria-label="Question"></div>
+    <div id="mix"></div>
+  </div>
+
+  <h2>Method</h2>
+  <ol class="method">
+    <li><b>Data.</b> NetHealth, a University of Notre Dame study that followed about 700 undergraduates from 2015 to 2019 (public, CC BY 4.0). I use the second survey round and the friends each student named in it, keeping pairs where both students took part.</li>
+    <li><b>Questions.</b> Five questions where real friends agree far more than chance: beer, wine or liquor, political party, legalising marijuana and same-sex marriage. Wording and options are taken from the study&rsquo;s questionnaire.</li>
+    <li><b>Baseline.</b> Each student is simulated alone from gender, race and home region, the same three facts the Artificial Societies Benchmark uses for this study.</li>
+    <li><b>Background and beyond.</b> Shuffle answers among students with the same profile, 2,000 times. Agreement that survives the shuffle is explained by shared background; the rest is beyond it. A simulator that answers one student at a time can only produce the first kind.</li>
+    <li><b>Network-aware runs.</b> Each simulated student is also shown what their friends answered in the previous run. No real answers are ever shown to the model.</li>
+  </ol>
+  <p>Limits: one university, one survey round, one small model so far. The network-aware runs test whether showing friends&rsquo; answers produces agreement; they do not show that the model has learned how influence works.</p>
+  <footer id="foot"></footer>
+</main>
+<script src="results.js"></script>
+<script>
+(function () {
+  const R = window.RESULTS, Q = R.questions, C = R.conditions, base = C[0];
+  const order = Object.keys(Q).filter(k => base.items[k]).sort((a, b) => base.items[b].real_friend_effect - base.items[a].real_friend_effect);
+  const pct = (v, d = 0) => (100 * v).toFixed(d) + '%';
+  const colors = ['var(--s1)', 'var(--s2)', 'var(--s3)'];
+  const el = (n, a = {}, t) => { const e = document.createElementNS('http://www.w3.org/2000/svg', n); for (const k in a) e.setAttribute(k, a[k]); if (t != null) e.textContent = t; return e; };
+  const mean = xs => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+  // headline
+  const realBeyond = mean(order.map(k => base.items[k].real_beyond_profile)), simBeyond = mean(order.map(k => base.items[k].sim_beyond_profile));
+  const realBg = mean(order.map(k => base.items[k].real_profile_part)), simBg = mean(order.map(k => base.items[k].sim_profile_part));
+  const last = C[C.length - 1], pp = v => (100 * v).toFixed(1);
+  document.getElementById('lede').textContent =
+    `Across ${R.friend_pairs_total.toLocaleString()} real friendships between university students, friends match on drinking and politics ` +
+    `${pp(realBeyond)} points more often than their gender, race and home region can explain. Simulate the same students one at a time and that drops to ${pp(simBeyond)} points, ` +
+    `while the model overstates how much background alone decides (${pp(simBg)} points against ${pp(realBg)} in reality).`;
+  const tiles = [
+    [R.friend_pairs_total.toLocaleString(), 'real friend pairs, both students in the study'],
+    [pp(realBeyond) + ' pts', 'extra agreement between real friends, beyond shared background'],
+    [pp(simBeyond) + ' pts', `the same for ${base.model.join(', ')} simulating one student at a time`],
+  ];
+  if (C.length > 1) tiles.push([pp(mean(order.map(k => last.items[k].sim_beyond_profile))) + ' pts', `once simulated students see their friends\u2019 answers (${last.label.toLowerCase()})`]);
+  document.getElementById('tiles').style.gridTemplateColumns = `repeat(${tiles.length}, 1fr)`;
+  document.getElementById('tiles').innerHTML = tiles.map(t => `<div class="tile"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('');
+  document.getElementById('agreeSub').textContent = `${base.items[order[0]].pairs}–${Math.max(...order.map(k => base.items[k].pairs))} friend pairs per question. Model: ${base.model.join(', ')}.`;
+  document.getElementById('foot').innerHTML = 'Data: NetHealth Project, University of Notre Dame (CC BY 4.0). Built on the Artificial Societies Benchmark. Only aggregate figures are published here.';
+
+  // legend
+  const legendItems = [['<i style="background:var(--real)"></i>Real friends'], ['<i class="tick" style="background:var(--ref)"></i>Random pairs'], ['<i class="band" style="background:var(--band)"></i>Explained by shared background (95% range)']]
+    .concat(C.map((c, i) => [`<i style="background:${colors[i]}"></i>${c.label}`]));
+  document.getElementById('agreeLegend').innerHTML = legendItems.map(x => `<span>${x[0]}</span>`).join('');
+  document.getElementById('shareLegend').innerHTML = C.map((c, i) => `<span><i style="background:${colors[i]}"></i>${c.label}</span>`).join('');
+
+  // tooltip
+  const tip = document.getElementById('tip'), card = document.getElementById('agreeCard');
+  const show = (ev, html, host) => { const r = host.getBoundingClientRect(); tip.innerHTML = html; tip.style.opacity = 1; host.appendChild(tip);
+    tip.style.left = Math.min(ev.clientX - r.left + 12, r.width - 270) + 'px'; tip.style.top = (ev.clientY - r.top + 14) + 'px'; };
+  const hide = () => { tip.style.opacity = 0; };
+  const hover = (node, html, host) => { node.addEventListener('mousemove', e => show(e, html, host)); node.addEventListener('mouseleave', hide); };
+
+  // chart 1: dot plot
+  (function () {
+    const svg = document.getElementById('agree'), W = 772, left = 170, right = 24, rowH = 62, top = 16, H = top + rowH * order.length + 34;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const all = [];
+    order.forEach(k => { const b = base.items[k]; all.push(b.real_friends_agree, b.real_random_pairs, b.ceiling_low, b.ceiling_high); C.forEach(c => all.push(c.items[k].sim_friends_agree)); });
+    const lo = Math.floor(Math.min(...all) * 10) / 10, hi = Math.min(1, Math.ceil(Math.max(...all) * 10) / 10);
+    const x = v => left + (v - lo) / (hi - lo) * (W - left - right);
+    for (let t = lo; t <= hi + 1e-9; t += 0.1) {
+      svg.appendChild(el('line', { x1: x(t), x2: x(t), y1: top, y2: top + rowH * order.length, stroke: 'var(--line)', 'stroke-width': 1 }));
+      svg.appendChild(el('text', { x: x(t), y: H - 10, 'text-anchor': 'middle' }, Math.round(t * 100) + '%'));
+    }
+    order.forEach((k, i) => {
+      const b = base.items[k], y = top + rowH * i + rowH / 2;
+      svg.appendChild(el('text', { x: 0, y: y + 5, class: 'q' }, Q[k]));
+      svg.appendChild(el('rect', { x: x(b.ceiling_low), y: y - 11, width: x(b.ceiling_high) - x(b.ceiling_low), height: 22, rx: 4, fill: 'var(--band)' }));
+      svg.appendChild(el('line', { x1: x(b.real_random_pairs), x2: x(b.real_random_pairs), y1: y - 11, y2: y + 11, stroke: 'var(--ref)', 'stroke-width': 2, 'stroke-linecap': 'round' }));
+      const marks = C.map((c, j) => ({ v: c.items[k].sim_friends_agree, fill: colors[j], label: c.label, extra: `own random pairs ${pct(c.items[k].sim_random_pairs, 1)}` }))
+        .concat([{ v: b.real_friends_agree, fill: 'var(--real)', label: 'Real friends', extra: `random pairs ${pct(b.real_random_pairs, 1)}` }]);
+      marks.forEach(m => {
+        svg.appendChild(el('circle', { cx: x(m.v), cy: y, r: 6, fill: m.fill, stroke: 'var(--surface)', 'stroke-width': 2 }));
+        const hit = el('circle', { cx: x(m.v), cy: y, r: 13, class: 'hit' });
+        hover(hit, `<b>${Q[k]}</b><br>${m.label}: ${pct(m.v, 1)} agree<br>${m.extra}`, card); svg.appendChild(hit);
+      });
+      svg.appendChild(el('text', { x: x(b.real_friends_agree), y: y - 14, 'text-anchor': 'middle' }, (i === 0 ? 'real friends ' : '') + pct(b.real_friends_agree)));
+      const bandHit = el('rect', { x: x(b.ceiling_low), y: y - 11, width: Math.max(8, x(b.ceiling_high) - x(b.ceiling_low)), height: 22, class: 'hit' });
+      hover(bandHit, `<b>${Q[k]}</b><br>Explained by shared background: ${pct(b.ceiling_one_at_a_time, 1)}<br>95% range ${pct(b.ceiling_low, 1)} to ${pct(b.ceiling_high, 1)}`, card);
+      svg.insertBefore(bandHit, svg.querySelector('circle'));
+    });
+    const head = ['Question', 'Pairs', 'Real friends', 'Random pairs', 'Shared background'].concat(C.map(c => c.label));
+    document.getElementById('agreeTable').innerHTML = '<table><tr>' + head.map(h => `<th>${h}</th>`).join('') + '</tr>' + order.map(k => {
+      const b = base.items[k];
+      return `<tr><td>${Q[k]}</td><td>${b.pairs}</td><td>${pct(b.real_friends_agree, 1)}</td><td>${pct(b.real_random_pairs, 1)}</td><td>${pct(b.ceiling_one_at_a_time, 1)}</td>` +
+        C.map(c => `<td>${pct(c.items[k].sim_friends_agree, 1)}</td>`).join('') + '</tr>';
+    }).join('') + '</table>';
+  })();
+
+  // chart 2: friend effect split into background and beyond
+  (function () {
+    const svg = document.getElementById('share'), host = document.getElementById('splitCard');
+    const runs = [{ label: 'Real students', color: 'var(--real)', get: it => [it.real_profile_part, it.real_beyond_profile] }]
+      .concat(C.map((c, j) => ({ label: c.label, color: colors[j], key: c.key, get: (it, k) => [c.items[k].sim_profile_part, c.items[k].sim_beyond_profile] })));
+    const W = 772, left = 170, right = 70, bar = 14, gap = 6, group = runs.length * (bar + gap) + 26, top = 4, H = top + group * order.length + 30;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const totals = order.flatMap(k => runs.map(r => { const [a, b] = r.get(base.items[k], k); return Math.max(0, a) + Math.max(0, b); }));
+    const hi = Math.ceil(Math.max(...totals) * 100 / 5) * 5 / 100, x = v => left + v / hi * (W - left - right);
+    for (let t = 0; t <= hi + 1e-9; t += 0.05) {
+      svg.appendChild(el('line', { x1: x(t), x2: x(t), y1: top, y2: H - 30, stroke: 'var(--line)', 'stroke-width': 1 }));
+      svg.appendChild(el('text', { x: x(t), y: H - 10, 'text-anchor': 'middle' }, Math.round(t * 100) + ' pts'));
+    }
+    const pts = v => (100 * v).toFixed(1) + ' pts';
+    order.forEach((k, i) => {
+      const y0 = top + group * i + 10;
+      svg.appendChild(el('text', { x: 0, y: y0 + bar - 2, class: 'q' }, Q[k]));
+      runs.forEach((r, j) => {
+        const [bg, beyond] = r.get(base.items[k], k), y = y0 + j * (bar + gap);
+        const w1 = x(Math.max(0, bg)) - x(0), w2 = x(Math.max(0, beyond)) - x(0);
+        if (w1 > 0) svg.appendChild(el('rect', { x: x(0), y, width: w1, height: bar, fill: 'var(--ref)' }));
+        const x2 = x(0) + w1 + (w1 > 0 ? 2 : 0), rr = Math.min(4, w2);
+        if (w2 > 0) svg.appendChild(el('path', { d: `M${x2},${y}h${w2 - rr}a${rr},${rr} 0 0 1 ${rr},${rr}v${bar - 2 * rr}a${rr},${rr} 0 0 1 ${-rr},${rr}h${-(w2 - rr)}z`, fill: r.color }));
+        svg.appendChild(el('text', { x: x2 + w2 + 6, y: y + bar - 2 }, (j === 0 ? 'real ' : '') + pts(bg + beyond)));
+        const hit = el('rect', { x: x(0), y: y - 2, width: Math.max(w1 + w2 + 2, 12), height: bar + 4, class: 'hit' });
+        hover(hit, `<b>${Q[k]}</b><br>${r.label}<br>explained by background: ${pts(bg)}<br>beyond background: ${pts(beyond)}`, host);
+        svg.appendChild(hit);
+      });
+    });
+    document.getElementById('shareLegend').innerHTML = '<span><i class="band" style="background:var(--ref)"></i>Explained by shared background</span>' +
+      runs.map(r => `<span><i style="background:${r.color}"></i>${r.label}: beyond background</span>`).join('');
+    document.getElementById('splitTable').innerHTML = '<table><tr><th>Question</th><th>Run</th><th>Explained by background</th><th>Beyond background</th><th>Chance of that by luck</th></tr>' +
+      order.flatMap(k => runs.map((r, j) => { const [a, b] = r.get(base.items[k], k); const pv = j === 0 ? base.items[k].real_beyond_profile_p : C[j - 1].items[k].sim_beyond_profile_p;
+        return `<tr><td>${j === 0 ? Q[k] : ''}</td><td>${r.label}</td><td>${pts(a)}</td><td>${pts(b)}</td><td>${pv < 0.001 ? 'under 0.1%' : pct(pv, 1)}</td></tr>`; })).join('') + '</table>';
+  })();
+
+  // chart 3: answer mix as a table of meters
+  (function () {
+    const pick = document.getElementById('qPick'), mix = document.getElementById('mix');
+    const draw = k => {
+      [...pick.children].forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k));
+      const b = base.items[k], opts = Object.keys(b.real_shares).sort((a, c) => b.real_shares[c] - b.real_shares[a]);
+      C.forEach(c => Object.keys(c.items[k].sim_shares).forEach(o => { if (!opts.includes(o)) opts.push(o); }));
+      const cols = [['Real students', b.real_shares, 'var(--real)']].concat(C.map((c, i) => [c.label, c.items[k].sim_shares, colors[i]]));
+      const cell = (v, color) => `<td><span style="display:inline-block;vertical-align:middle;height:8px;border-radius:4px;background:${color};width:${Math.round((v || 0) * 70)}px;margin-right:8px"></span>${pct(v || 0)}</td>`;
+      mix.innerHTML = '<div style="overflow-x:auto"><table><tr><th>Answer</th>' + cols.map(c => `<th>${c[0]}</th>`).join('') + '</tr>' +
+        opts.map(o => `<tr><td>${o}</td>` + cols.map(c => cell(c[1][o], c[2])).join('') + '</tr>').join('') +
+        '<tr><td style="color:var(--text-3)">Matches the real student’s own answer</td><td></td>' + C.map(c => `<td>${pct(c.items[k].individual_accuracy)}</td>`).join('') + '</tr></table></div>';
+    };
+    order.forEach(k => { const b = document.createElement('button'); b.textContent = Q[k]; b.dataset.k = k; b.onclick = () => draw(k); pick.appendChild(b); });
+    draw(order[0]);
+  })();
+})();
+</script>
+</body>
+</html>
