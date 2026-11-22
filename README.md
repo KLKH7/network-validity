@@ -35,15 +35,25 @@ Three things stand out.
 
 A caveat that matters: the simulated answers are far less varied than real ones. On wine or liquor, 6% of simulated students said "1-2 times a week" against 38% of real students. Raw agreement between simulated friends is therefore high, and meaningless on its own, which is why every figure here is measured against randomly paired students from the same run.
 
+## Giving the model the graph
+
+In a second run each simulated student was also shown what their named friends answered in the first run. No real answers were shown to the model.
+
+| | Real students | Simulated one at a time | Shown friends' answers |
+| --- | ---: | ---: | ---: |
+| Agreement beyond background, average (points) | 8.8 | 1.7 | 7.0 |
+| Any two students give the same answer | 27% | 46% | 66% |
+
+Showing friends' answers closes most of the gap, but through conformity. The model moves towards whatever it is shown, so friends converge and so does everyone else: two randomly paired simulated students now agree 66% of the time, against 27% for real students. On political party the simulated friend effect overshoots the real one (11.6 points against 6.5).
+
 ## Status
 
 | Run | State |
 | --- | --- |
 | `claude-haiku-5-5`, one student at a time | Done |
-| `claude-haiku-5-5`, each student shown their friends' simulated answers (two rounds) | Running |
+| `claude-haiku-5-5`, each student shown their friends' simulated answers, round 1 | Done |
+| The same, round 2 | Running |
 | `Qwen3-8B` (4-bit, run locally on a laptop), one student at a time | Running |
-
-The network-aware runs test whether giving the model the friendship graph closes the gap. No real answers are ever shown to the model, only what the simulated friends said in the previous round.
 
 ## How it works
 
