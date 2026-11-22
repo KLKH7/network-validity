@@ -1,59 +1,64 @@
 # Network validity
 
-A proposed twelfth test for the [Artificial Societies Benchmark](https://github.com/artificial-societies/artificial-societies-benchmark). The benchmark checks internal, construct and external validity, one respondent at a time. This adds the missing kind: whether the ties between respondents survive simulation.
+A proposed twelfth test for the [Artificial Societies Benchmark](https://github.com/artificial-societies/artificial-societies-benchmark). The benchmark checks internal, construct and external validity, one respondent at a time. This asks one more question, about the ties between respondents.
 
-**Real friends agree with each other beyond what their background explains. Students simulated one at a time don't.**
+**When two real students are friends, are their simulated versions as alike as the real ones were?**
 
-![Friend effect split into shared background and beyond](figures/friend_effect_split.svg)
+This is a first pass. Its limits are listed at the end.
 
 ## The question
 
-The Artificial Societies Benchmark asks whether a model answering as a specific survey respondent gives valid answers. Its eleven tests score each simulated respondent against the real person. None of them look at the ties between respondents.
+The Artificial Societies Benchmark asks whether a model answering as a specific survey respondent gives valid answers. Its eleven tests score each simulated respondent against the real person. One of its sources, the NetHealth study, also recorded who each student named as a friend, which makes it possible to compare pairs.
 
-One of the benchmark's own sources, the NetHealth study, also recorded who each student named as a friend. That makes a twelfth question possible: **when two real students are friends, are their simulated versions as alike as the real ones were?**
+## What the real data shows
 
-## Result so far
-
-Data: 1,031 friend pairs among 639 University of Notre Dame students (NetHealth, second survey round, 2016). Model: `claude-haiku-5-5`, each student simulated alone from gender, race and home region, the same three facts the benchmark uses for this study.
+Data: 1,031 friend pairs among 639 University of Notre Dame students (NetHealth, second survey round, 2016).
 
 Extra agreement between friends, in percentage points above randomly paired students:
 
-| Question | Real: explained by background | Real: beyond background | Simulated: explained by background | Simulated: beyond background |
-| --- | ---: | ---: | ---: | ---: |
-| Drank wine or liquor | 1.1 | 13.2 | 0.1 | 1.0 |
-| Drank beer | 2.4 | 10.2 | 1.3 | 2.1 |
-| Same-sex marriage | -0.4 | 8.1 | 3.6 | 1.9 |
-| Political party | 1.1 | 6.5 | 3.8 | 3.0 |
-| Legalising marijuana | 1.1 | 5.8 | 3.9 | 0.6 |
-| **Average** | **1.0** | **8.8** | **2.6** | **1.7** |
+| Question | Explained by gender, race and region | Beyond those three facts |
+| --- | ---: | ---: |
+| Drank wine or liquor | 1.1 | 13.2 |
+| Drank beer | 2.4 | 10.2 |
+| Same-sex marriage | -0.4 | 8.1 |
+| Political party | 1.1 | 6.5 |
+| Legalising marijuana | 1.1 | 5.8 |
+| **Average** | **1.0** | **8.8** |
 
-Three things stand out.
+Real friends agree well beyond what those three profile fields explain. "Beyond" here means only that: not explained by gender, race and home region. It could still come from religion, school, dorm or earlier habits.
 
-1. **Almost all of the real friend effect is beyond background.** Friends share a gender, race and region more often than chance, but that explains about one point of agreement. The other 6 to 13 points come from something a demographic profile does not contain. All five are beyond anything 2,000 random shuffles produced.
-2. **The simulated students have almost none of it.** Their beyond-background agreement averages 1.7 points and is within noise of zero for four of the five questions. This is expected by construction: a simulator that answers one student at a time cannot know who is friends with whom.
-3. **The model overstates what background decides.** On the three opinion questions it attributes 3.6 to 3.9 points of friend agreement to shared background, where the real figure is about 1. It gets part of the way to the real friend effect, but for the wrong reason.
+### Were friends alike before they met?
 
-A caveat that matters: the simulated answers are far less varied than real ones. On wine or liquor, 6% of simulated students said "1-2 times a week" against 38% of real students. Raw agreement between simulated friends is therefore high, and meaningless on its own, which is why every figure here is measured against randomly paired students from the same run.
+NetHealth's first survey was taken the summer before the students arrived. For pairs who became friends at university, agreement above random pairs:
 
-## Giving the model the graph
-
-In a second run each simulated student was also shown what their named friends answered in the first run. No real answers were shown to the model.
-
-| | Real students | Simulated one at a time | Shown friends' answers |
+| Question | Pairs | Before arrival | After one semester |
 | --- | ---: | ---: | ---: |
-| Agreement beyond background, average (points) | 8.8 | 1.7 | 7.0 |
-| Any two students give the same answer | 27% | 46% | 66% |
+| Drank beer | 264 | 11.1 | 9.6 |
+| Drank wine or liquor | 264 | 5.7 | 13.2 |
+| Political party | 254 | 2.4 | 6.0 |
+| Legalising marijuana | 184 | 8.3 | 6.6 |
 
-Showing friends' answers closes most of the gap, but through conformity. The model moves towards whatever it is shown, so friends converge and so does everyone else: two randomly paired simulated students now agree 66% of the time, against 27% for real students. On political party the simulated friend effect overshoots the real one (11.6 points against 6.5).
+On beer and marijuana the agreement was already there: students chose friends who were like them. On wine or liquor and political party it grew after they met. With a few hundred pairs the growth is suggestive, not firm. Same-sex marriage was not asked in the first survey.
 
-## Status
+## What simulation shows
 
-| Run | State |
-| --- | --- |
-| `claude-haiku-5-5`, one student at a time | Done |
-| `claude-haiku-5-5`, each student shown their friends' simulated answers, round 1 | Done |
-| The same, round 2 | Running |
-| `Qwen3-8B` (4-bit, run locally on a laptop), one student at a time | Running |
+Each student was simulated alone from gender, race and home region, using the benchmark's persona prompt.
+
+| Run | Friend agreement beyond the profile (points) | Any two students give the same answer |
+| --- | ---: | ---: |
+| Real students | 8.8 | 27% |
+| `claude-haiku-5-5`, one student at a time | 1.7 | 46% |
+| `Qwen3-8B` (4-bit, run on a laptop), one student at a time | 0.4 | 83% |
+| `claude-haiku-5-5`, each student shown their friends' simulated answers | 7.0 | 66% |
+
+How to read this:
+
+- **The near-zero figures for students simulated alone are true by construction.** Any simulator that answers one student at a time, given a profile, cannot produce friend agreement beyond that profile. They say nothing about either model. What they show is how much a three-fact profile leaves out.
+- **A richer persona should recover the part that was there before the friendship.** If a persona carried what a student said before arriving, the likeness between friends-to-be would come with it and no network would be needed. This is not tested here yet.
+- **Showing friends' answers is a rough probe, not a model of friendship.** The 7.0 should not be set beside the real 8.8, because its size depends on how the answers are shown. The clear effect is conformity: any two simulated students then agree 66% of the time, against 27% for real students.
+- **Both small models give far less varied answers than real students**, which the benchmark already measures.
+
+![Friend effect split into shared background and beyond](figures/friend_effect_split.svg)
 
 ## How it works
 
@@ -73,6 +78,7 @@ pip install pandas numpy
 # human side only, no model needed
 python analysis/check_ties.py DATA_FOLDER
 python analysis/profile_ceiling.py DATA_FOLDER
+python analysis/selection_vs_influence.py DATA_FOLDER
 
 # simulate (needs the `claude` command line tool), then score
 python analysis/simulate_claude.py DATA_FOLDER answers.jsonl
@@ -91,18 +97,17 @@ python analysis/build_site_data.py
 python analysis/make_figure.py
 ```
 
-Open `site/index.html` for an interactive version of the results.
-
 ## Limits
 
-- One university and one survey round.
-- One small model so far, with a three-fact profile. Richer profiles would explain more, though profiles rich enough to explain friendship start to identify individual students.
-- The questions were chosen because real friends agree on them, so they are not a random sample of the survey.
+- The five questions were chosen because real friends agree on them, which flatters the size of the effect. A fairer version would use every attitude question, or choose on half the students and measure on the other half.
+- Agreement means giving exactly the same answer, so near misses count as disagreement.
+- One university. The before-and-after comparison rests on a few hundred pairs.
+- Two small models and a three-fact profile.
 - Friend ties are self-reported and only counted when both students are in the study.
 
 ## What is and is not in this repository
 
-Included: code, aggregate results, the figure and the results page. Not included: the NetHealth data, populated prompts and student-level model answers, following the benchmark's own practice.
+Included: code, aggregate results and the figure. Not included: the NetHealth data, populated prompts and student-level model answers, following the benchmark's own practice.
 
 ## Credits
 

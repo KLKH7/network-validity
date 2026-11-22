@@ -442,6 +442,213 @@ window.RESULTS = {
      }
     }
    }
+  },
+  {
+   "key": "qwen",
+   "label": "Qwen3 8B, one student at a time",
+   "note": "The baseline repeated on an open model run locally (4-bit).",
+   "model": [
+    "Qwen3-8B-4bit"
+   ],
+   "items": {
+    "gaymarriage_2": {
+     "item": "gaymarriage_2",
+     "pairs": 862,
+     "students": 555,
+     "real_friends_agree": 0.37470997679814383,
+     "real_random_pairs": 0.29729234338747096,
+     "real_friend_effect": 0.07741763341067287,
+     "ceiling_one_at_a_time": 0.29324767981438515,
+     "sim_friends_agree": 1.0,
+     "sim_random_pairs": 1.0,
+     "sim_friend_effect": 0.0,
+     "sim_friend_effect_p": 1.0,
+     "sim_same_profile_reshuffle": 1.0,
+     "share_of_real_effect_reproduced": 0.0,
+     "answer_distribution_gap_tvd": 0.7945945945945946,
+     "individual_accuracy": 0.20540540540540542,
+     "distinct_sim_answers": 1,
+     "real_profile_part": -0.004044663573085805,
+     "real_beyond_profile": 0.08146229698375868,
+     "real_beyond_profile_p": 0.0004997501249375312,
+     "sim_profile_part": 0.0,
+     "sim_beyond_profile": 0.0,
+     "sim_beyond_profile_p": 1.0,
+     "sim_beyond_low": 0.0,
+     "sim_beyond_high": 0.0,
+     "ceiling_low": 0.2633410672853828,
+     "ceiling_high": 0.3225058004640371,
+     "real_shares": {
+      "Strongly agree": 0.4774774774774775,
+      "Agree": 0.20540540540540542,
+      "Neither agree nor disagree": 0.12072072072072072,
+      "Disagree": 0.08828828828828829,
+      "Strongly disagree": 0.06126126126126126,
+      "Not sure": 0.04684684684684685
+     },
+     "sim_shares": {
+      "Agree": 1.0
+     }
+    },
+    "marijuana_2": {
+     "item": "marijuana_2",
+     "pairs": 862,
+     "students": 555,
+     "real_friends_agree": 0.3051044083526682,
+     "real_random_pairs": 0.23626566125290022,
+     "real_friend_effect": 0.068838747099768,
+     "ceiling_one_at_a_time": 0.2470052204176334,
+     "sim_friends_agree": 0.9849187935034803,
+     "sim_random_pairs": 0.9647053364269143,
+     "sim_friend_effect": 0.020213457076566077,
+     "sim_friend_effect_p": 0.0004997501249375312,
+     "sim_same_profile_reshuffle": 0.9791856148491879,
+     "share_of_real_effect_reproduced": 0.29363487756787193,
+     "answer_distribution_gap_tvd": 0.6216216216216216,
+     "individual_accuracy": 0.3567567567567568,
+     "distinct_sim_answers": 2,
+     "real_profile_part": 0.010739559164733181,
+     "real_beyond_profile": 0.058099187935034824,
+     "real_beyond_profile_p": 0.0004997501249375312,
+     "sim_profile_part": 0.014480278422273618,
+     "sim_beyond_profile": 0.005733178654292459,
+     "sim_beyond_profile_p": 0.07196401799100449,
+     "sim_beyond_low": -0.001160092807424573,
+     "sim_beyond_high": 0.012761020881670637,
+     "ceiling_low": 0.21925754060324826,
+     "ceiling_high": 0.2738109048723896,
+     "real_shares": {
+      "Favor": 0.36036036036036034,
+      "Oppose": 0.21621621621621623,
+      "Strongly favor": 0.15675675675675677,
+      "Not sure": 0.14954954954954955,
+      "Strongly oppose": 0.11711711711711711
+     },
+     "sim_shares": {
+      "Favor": 0.9819819819819819,
+      "Not sure": 0.018018018018018018
+     }
+    },
+    "polparty_1_2": {
+     "item": "polparty_1_2",
+     "pairs": 865,
+     "students": 557,
+     "real_friends_agree": 0.3375722543352601,
+     "real_random_pairs": 0.26199826589595376,
+     "real_friend_effect": 0.07557398843930635,
+     "ceiling_one_at_a_time": 0.2728121387283237,
+     "sim_friends_agree": 0.791907514450867,
+     "sim_random_pairs": 0.7560034682080924,
+     "sim_friend_effect": 0.035904046242774657,
+     "sim_friend_effect_p": 0.010494752623688156,
+     "sim_same_profile_reshuffle": 0.7880682080924856,
+     "share_of_real_effect_reproduced": 0.47508470816793374,
+     "answer_distribution_gap_tvd": 0.6373429084380611,
+     "individual_accuracy": 0.25314183123877915,
+     "distinct_sim_answers": 2,
+     "real_profile_part": 0.010813872832369953,
+     "real_beyond_profile": 0.0647601156069364,
+     "real_beyond_profile_p": 0.0004997501249375312,
+     "sim_profile_part": 0.03206473988439318,
+     "sim_beyond_profile": 0.003839306358381478,
+     "sim_beyond_profile_p": 0.39730134932533734,
+     "sim_beyond_low": -0.020809248554913284,
+     "sim_beyond_high": 0.028901734104046284,
+     "ceiling_low": 0.24277456647398843,
+     "ceiling_high": 0.3040462427745665,
+     "real_shares": {
+      "Republican": 0.35547576301615796,
+      "Democrat": 0.25314183123877915,
+      "Independent": 0.22082585278276481,
+      "No preference": 0.15439856373429084,
+      "Other": 0.01615798922800718
+     },
+     "sim_shares": {
+      "Independent": 0.8581687612208259,
+      "Republican": 0.14183123877917414
+     }
+    },
+    "usebeer_2": {
+     "item": "usebeer_2",
+     "pairs": 887,
+     "students": 567,
+     "real_friends_agree": 0.39571589627959414,
+     "real_random_pairs": 0.2692705749718151,
+     "real_friend_effect": 0.12644532130777902,
+     "ceiling_one_at_a_time": 0.29337542277339346,
+     "sim_friends_agree": 0.8895152198421646,
+     "sim_random_pairs": 0.8417694475760992,
+     "sim_friend_effect": 0.04774577226606547,
+     "sim_friend_effect_p": 0.0004997501249375312,
+     "sim_same_profile_reshuffle": 0.8822474633596392,
+     "share_of_real_effect_reproduced": 0.3776001497900271,
+     "answer_distribution_gap_tvd": 0.582010582010582,
+     "individual_accuracy": 0.32451499118165783,
+     "distinct_sim_answers": 2,
+     "real_profile_part": 0.024104847801578344,
+     "real_beyond_profile": 0.10234047350620068,
+     "real_beyond_profile_p": 0.0004997501249375312,
+     "sim_profile_part": 0.040478015783540044,
+     "sim_beyond_profile": 0.007267756482525423,
+     "sim_beyond_profile_p": 0.11794102948525736,
+     "sim_beyond_low": -0.0033821871476887866,
+     "sim_beyond_high": 0.018038331454340528,
+     "ceiling_low": 0.2649379932356257,
+     "ceiling_high": 0.3246899661781285,
+     "real_shares": {
+      "Not at all": 0.3474426807760141,
+      "1-2 times a week": 0.3315696649029982,
+      "Less than 1-2 times a month": 0.14462081128747795,
+      "1-2 times a month": 0.13227513227513227,
+      "Three times a week or more": 0.04409171075837742
+     },
+     "sim_shares": {
+      "1-2 times a week": 0.9135802469135802,
+      "1-2 times a month": 0.08641975308641975
+     }
+    },
+    "usewine_2": {
+     "item": "usewine_2",
+     "pairs": 887,
+     "students": 567,
+     "real_friends_agree": 0.41939120631341603,
+     "real_random_pairs": 0.2769481397970688,
+     "real_friend_effect": 0.14244306651634725,
+     "ceiling_one_at_a_time": 0.2877553551296505,
+     "sim_friends_agree": 0.6832018038331454,
+     "sim_random_pairs": 0.5868568207440812,
+     "sim_friend_effect": 0.09634498308906425,
+     "sim_friend_effect_p": 0.0004997501249375312,
+     "sim_same_profile_reshuffle": 0.6797452085682075,
+     "share_of_real_effect_reproduced": 0.6763753789167926,
+     "answer_distribution_gap_tvd": 0.437389770723104,
+     "individual_accuracy": 0.3333333333333333,
+     "distinct_sim_answers": 4,
+     "real_profile_part": 0.010807215332581721,
+     "real_beyond_profile": 0.13163585118376553,
+     "real_beyond_profile_p": 0.0004997501249375312,
+     "sim_profile_part": 0.09288838782412634,
+     "sim_beyond_profile": 0.0034565952649379117,
+     "sim_beyond_profile_p": 0.2368815592203898,
+     "sim_beyond_low": -0.0033821871476887866,
+     "sim_beyond_high": 0.01014656144306647,
+     "ceiling_low": 0.26042841037204056,
+     "ceiling_high": 0.31679819616685456,
+     "real_shares": {
+      "1-2 times a week": 0.38095238095238093,
+      "Not at all": 0.30158730158730157,
+      "1-2 times a month": 0.1728395061728395,
+      "Less than 1-2 times a month": 0.10582010582010581,
+      "Three times a week or more": 0.03880070546737213
+     },
+     "sim_shares": {
+      "1-2 times a week": 0.7160493827160493,
+      "1-2 times a month": 0.2751322751322751,
+      "Less than 1-2 times a month": 0.005291005291005291,
+      "Not at all": 0.003527336860670194
+     }
+    }
+   }
   }
  ],
  "friend_pairs_total": 1031

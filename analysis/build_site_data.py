@@ -13,6 +13,7 @@ CONDITIONS = [
     ('baseline', 'One student at a time', 'Each simulated student is described by gender, race and home region, and answers alone.'),
     ('friends_r1', 'Shown friends’ answers, round 1', 'Each simulated student also sees what their friends answered in the baseline run.'),
     ('friends_r2', 'Shown friends’ answers, round 2', 'The same again, using the answers from round 1.'),
+    ('qwen', 'Qwen3 8B, one student at a time', 'The baseline repeated on an open model run locally (4-bit).'),
 ]
 QUESTIONS = {
     'usewine_2': 'Drank wine or liquor',
