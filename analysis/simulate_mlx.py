@@ -3,7 +3,7 @@
 Same prompts, questions and parsing as simulate_claude.py; only the model call differs.
 Decoding follows the benchmark's local-model regime: temperature 1.0, top-p 0.95, no reasoning.
 
-    python analysis/simulate_mlx.py DATA_FOLDER OUT.jsonl --model mlx-community/Qwen3.8-27B-4bit [--limit N]
+    python analysis/simulate_mlx.py DATA_FOLDER OUT.jsonl --model mlx-community/Qwen3-8B-4bit [--limit N]
     python analysis/simulate_mlx.py DATA_FOLDER OUT.jsonl --model ... --friends-from PREVIOUS.jsonl
 """
 import argparse

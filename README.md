@@ -41,7 +41,7 @@ A caveat that matters: the simulated answers are far less varied than real ones.
 | --- | --- |
 | `claude-haiku-5-5`, one student at a time | Done |
 | `claude-haiku-5-5`, each student shown their friends' simulated answers (two rounds) | Running |
-| `Qwen3.8-27B` (4-bit, run locally), one student at a time | Running |
+| `Qwen3-8B` (4-bit, run locally on a laptop), one student at a time | Running |
 
 The network-aware runs test whether giving the model the friendship graph closes the gap. No real answers are ever shown to the model, only what the simulated friends said in the previous round.
 
@@ -74,14 +74,14 @@ python analysis/score.py DATA_FOLDER answers_r1.jsonl results/friends_r1.json
 
 # local open model on Apple silicon
 pip install mlx-lm
-python analysis/simulate_mlx.py DATA_FOLDER answers_qwen.jsonl --model mlx-community/Qwen3.8-27B-4bit
+python analysis/simulate_mlx.py DATA_FOLDER answers_qwen.jsonl --model mlx-community/Qwen3-8B-4bit
 
 # rebuild the page data and the figure
 python analysis/build_site_data.py
 python analysis/make_figure.py
 ```
 
-Open `site/index.html` for the interactive version of the results.
+Open `site/index.html` for an interactive version of the results.
 
 ## Limits
 
