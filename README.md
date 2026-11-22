@@ -50,12 +50,13 @@ Each student was simulated alone from gender, race and home region, using the be
 | `claude-haiku-5-5`, one student at a time | 1.7 | 46% |
 | `Qwen3-8B` (4-bit, run on a laptop), one student at a time | 0.4 | 83% |
 | `claude-haiku-5-5`, each student shown their friends' simulated answers | 7.0 | 66% |
+| The same, a second round | 7.5 | 76% |
 
 How to read this:
 
 - **The near-zero figures for students simulated alone are true by construction.** Any simulator that answers one student at a time, given a profile, cannot produce friend agreement beyond that profile. They say nothing about either model. What they show is how much a three-fact profile leaves out.
 - **A richer persona should recover the part that was there before the friendship.** If a persona carried what a student said before arriving, the likeness between friends-to-be would come with it and no network would be needed. This is not tested here yet.
-- **Showing friends' answers is a rough probe, not a model of friendship.** The 7.0 should not be set beside the real 8.8, because its size depends on how the answers are shown. The clear effect is conformity: any two simulated students then agree 66% of the time, against 27% for real students.
+- **Showing friends' answers is a rough probe, not a model of friendship.** The 7.0 should not be set beside the real 8.8, because its size depends on how the answers are shown. The clear effect is conformity: any two simulated students then agree 66% of the time, and 76% after a second round, against 27% for real students. After two rounds every simulated student gave the same answer on same-sex marriage.
 - **Both small models give far less varied answers than real students**, which the benchmark already measures.
 
 ![Friend effect split into shared background and beyond](figures/friend_effect_split.svg)
