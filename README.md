@@ -1,6 +1,6 @@
-# The friend effect
+# Network validity
 
-A network test for synthetic survey respondents, built on the [Artificial Societies Benchmark](https://github.com/artificial-societies/artificial-societies-benchmark).
+A proposed twelfth test for the [Artificial Societies Benchmark](https://github.com/artificial-societies/artificial-societies-benchmark). The benchmark checks internal, construct and external validity, one respondent at a time. This adds the missing kind: whether the ties between respondents survive simulation.
 
 **Real friends agree with each other beyond what their background explains. Students simulated one at a time don't.**
 
