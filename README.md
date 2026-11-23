@@ -56,10 +56,46 @@ How to read this:
 
 - **The near-zero figures for students simulated alone are true by construction.** Any simulator that answers one student at a time, given a profile, cannot produce friend agreement beyond that profile. They say nothing about either model. What they show is how much a three-fact profile leaves out.
 - **A richer persona should recover the part that was there before the friendship.** If a persona carried what a student said before arriving, the likeness between friends-to-be would come with it and no network would be needed. This is not tested here yet.
-- **Showing friends' answers is a rough probe, not a model of friendship.** The 7.0 should not be set beside the real 8.8, because its size depends on how the answers are shown. The clear effect is conformity: any two simulated students then agree 66% of the time, and 76% after a second round, against 27% for real students. After two rounds every simulated student gave the same answer on same-sex marriage.
+- **Showing friends' answers is a rough probe, not a model of friendship.** The 7.0 should not be set beside the real 8.8, because its size depends on how the answers are shown. Real students never saw their friends' answers to this survey, so the two are not the same treatment.
+- **The population figures are not about friends.** "Any two students give the same answer" measures variety of opinion across everyone. The simulated population was already far less varied before anyone saw an answer (46% against 27%, and 83% for the smaller model), which the benchmark already measures. Only the change from 46% to 66% and 76% belongs to showing answers. The controls below test what that change is.
 - **Both small models give far less varied answers than real students**, which the benchmark already measures.
 
 ![Friend effect split into shared background and beyond](figures/friend_effect_split.svg)
+
+### What showing answers actually does: three controls
+
+Each control is one more run of `claude-haiku-5-5` over all 639 students and five questions, starting from the one-at-a-time answers.
+
+**Strangers.** Each student sees the answers of random non-friends, as many as they have friends, in an otherwise identical prompt.
+
+| Answers shown | Gave the most common answer shown | Expected with nothing shown |
+| --- | ---: | ---: |
+| Their friends' | 84% | 57% |
+| Random strangers' | 82% | 53% |
+
+**Own earlier answer.** Each student sees their friends' answers and also what they themselves answered before. Among the 1,050 cases where a student's earlier answer differed from the most common answer shown:
+
+| Prompt | Switched to the most common answer | Kept their own |
+| --- | ---: | ---: |
+| Friends' answers only | 78% | 15% |
+| Friends' answers and their own earlier answer | 19% | 79% |
+
+**Dose.** Each student sees four made-up friend answers. None, two or all four give one alternative answer; the rest repeat the student's own earlier answer, which the student is not shown. A fresh answer with nothing shown picks that alternative about 11% of the time.
+
+| Friends giving the alternative | Chose the alternative | Kept their earlier answer |
+| --- | ---: | ---: |
+| 0 of 4 | 3% | 91% |
+| 2 of 4 | 18% | 70% |
+| 4 of 4 | 60% | 24% |
+
+What the controls show:
+
+- **The pull is real and grows with how one-sided the shown answers are.**
+- **It is not about friendship.** Strangers' answers pull as hard as friends'.
+- **Most of it disappears when a student is told their own earlier answer.** The run to a single answer came largely from simulated students having no memory of what they had said. Any two students then agree 53% of the time after one round, against 66% without the reminder.
+- **Both effects are the model following its prompt.** Being told "you answered X" is a cue like any other. The result shows which cue wins, not that a simulated student holds a view.
+
+"Expected with nothing shown" is the share of other students with the same profile whose one-at-a-time answer equals the answer in question. No intervals are computed for these figures yet.
 
 ## How it works
 
@@ -89,6 +125,12 @@ python analysis/score.py DATA_FOLDER answers.jsonl results/baseline.json
 python analysis/simulate_claude.py DATA_FOLDER answers_r1.jsonl --friends-from answers.jsonl
 python analysis/score.py DATA_FOLDER answers_r1.jsonl results/friends_r1.json
 
+# controls: strangers' answers, made-up answers at three doses, and the student's own earlier answer
+python analysis/simulate_claude.py DATA_FOLDER answers_control-strangers.jsonl --friends-from answers.jsonl --control strangers
+python analysis/simulate_claude.py DATA_FOLDER answers_control-dose.jsonl --friends-from answers.jsonl --control dose
+python analysis/simulate_claude.py DATA_FOLDER answers_control-anchor.jsonl --friends-from answers.jsonl --control anchor
+python analysis/score_controls.py DATA_FOLDER ANSWERS_FOLDER results/controls.json
+
 # local open model on Apple silicon
 pip install mlx-lm
 python analysis/simulate_mlx.py DATA_FOLDER answers_qwen.jsonl --model mlx-community/Qwen3-8B-4bit
@@ -103,7 +145,9 @@ python analysis/make_figure.py
 - The five questions were chosen because real friends agree on them, which flatters the size of the effect. A fairer version would use every attitude question, or choose on half the students and measure on the other half.
 - Agreement means giving exactly the same answer, so near misses count as disagreement.
 - One university. The before-and-after comparison rests on a few hundred pairs.
-- Two small models and a three-fact profile.
+- Two small models and a three-fact profile. The controls use one model.
+- Simulated students were shown the exact answers to the exact question, just before answering. Real students were shown nothing, so no figure here says simulated influence is stronger or weaker than real influence.
+- `score_controls.py` expects the file names used in this project (`answers_claude-haiku-5-5...`); rename yours or edit `STEM` and `FILES`.
 - Friend ties are self-reported and only counted when both students are in the study.
 
 ## What is and is not in this repository

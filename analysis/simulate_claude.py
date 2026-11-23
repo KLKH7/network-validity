@@ -60,6 +60,12 @@ The students this person named as friends at university answered this same quest
 '''
 
 
+EARLIER = '''
+Earlier answer:
+When first asked this same question, this person answered: {answer}
+'''
+
+
 def roster(folder):
     net = pd.read_csv(folder + '/NetWorkSurvey.csv', low_memory=False)
     basic = pd.read_csv(folder + '/BasicSurvey.csv', low_memory=False).set_index('egoid')
@@ -72,13 +78,15 @@ def roster(folder):
     return basic, np.unique(e.to_numpy()), ties
 
 
-def prompt(row, item, friend_answers=None):
+def prompt(row, item, friend_answers=None, own=None):
     lines = ['- University cohort: Entered the University of Notre Dame in fall 2015']
     lines += [f'- {label}: {row[col]}' for col, label in PROFILE if pd.notna(row[col])]
     question, options = ITEMS[item]
     friends = ''
     if friend_answers:
         friends = FRIENDS.format(answers='\n'.join(f'- Friend {i}: {a}' for i, a in enumerate(friend_answers, 1)))
+    if own:
+        friends = EARLIER.format(answer=own) + friends
     return TEMPLATE.format(demographics='\n'.join(lines), friends=friends, question=question,
                            options='\n'.join('  - ' + o for o in options))
 
@@ -110,9 +118,16 @@ def main():
     a.add_argument('--model', default='haiku')
     a.add_argument('--limit', type=int)
     a.add_argument('--workers', type=int, default=8)
+    a.add_argument('--control', choices=['strangers', 'dose', 'anchor'],
+                   help='strangers: show answers of random non-friends instead of friends. '
+                        'dose: show four made-up friend answers, 0, 2 or 4 of which disagree with the student\'s own earlier answer. '
+                        'anchor: show real friends\' answers and also the student\'s own earlier answer. All need --friends-from.')
+    a.add_argument('--seed', type=int, default=20261122)
     a.add_argument('--friends-from', help='answers file from the previous round; each student is shown what their friends answered in it')
     args = a.parse_args()
     basic, students, ties = roster(args.folder)
+    everyone = [int(s) for s in students]
+    item_number = {item: i for i, item in enumerate(ITEMS)}
     previous = {}
     if args.friends_from:
         for r in map(json.loads, Path(args.friends_from).read_text().splitlines()):
@@ -134,8 +149,27 @@ def main():
     def run(job):
         student, item = job
         shown = [previous[(f, item)] for f in sorted(ties.get(student, [])) if (f, item) in previous] if previous else None
-        text = prompt(basic.loc[student], item, shown)
-        record = {'egoid': student, 'item': item, 'answer': None, 'raw': None, 'model': None, 'friends_shown': len(shown) if shown else 0}
+        own, extra = None, {}
+        rng = np.random.default_rng([args.seed, student, item_number[item]])
+        if args.control == 'strangers' and shown:
+            friends = set(ties.get(student, []))
+            pool = [s for s in everyone if s != student and s not in friends and (s, item) in previous]
+            shown = [previous[(int(s), item)] for s in rng.choice(pool, len(shown), replace=False)]
+        elif args.control == 'dose':
+            earlier = previous.get((student, item))
+            if not earlier:
+                return
+            target = str(rng.choice([o for o in ITEMS[item][1] if o != earlier]))
+            k = int(rng.choice([0, 2, 4]))
+            shown = [target] * k + [earlier] * (4 - k)
+            rng.shuffle(shown)
+            extra = {'earlier': earlier, 'target': target, 'disagreeing': k}
+        elif args.control == 'anchor':
+            own = previous.get((student, item))
+            extra = {'earlier': own}
+        text = prompt(basic.loc[student], item, shown, own)
+        record = {'egoid': student, 'item': item, 'answer': None, 'raw': None, 'model': None,
+                  'friends_shown': len(shown) if shown else 0, 'shown': shown, 'control': args.control, **extra}
         for _ in range(2):
             try:
                 record['raw'], record['model'] = ask(text, args.model, workdir)
